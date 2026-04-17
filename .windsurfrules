@@ -1,0 +1,8 @@
+# RULE: Antigravity Memory Protocol
+Cada vez que un plan cambie, una tarea se complete o el usuario corrija el rumbo, DEBÉS sincronizar el estado en `/.agents/memory.md`. Siempre dentro del proyecto que se lleva a cabo.
+
+## El Algoritmo de Actualización:
+1. **CHECKPOINT:** Antes de responder, leé `/.agents/memory.md`. Si no existe, crealo basándote en el `planning-master.md`, si no existe crear uno.
+2. **DIFF LOG:** Compará el "Estado Deseado" del plan anterior con lo que realmente pasó.
+3. **PROCESS REGISTRY:** Actualizá la lista de procesos. Si un proceso falló, marcalo como `[X] FAILED` con el motivo. No borres los fallos; son las cicatrices que nos enseñan.
+4. **ATOMICIDAD:** No esperes a que el usuario te lo pida. Al final de tu ejecución, si hubo cambios en la lógica o el progreso, el archivo DEBE quedar actualizado.
