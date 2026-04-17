@@ -3,24 +3,33 @@ import React from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { fmt, sortRegs, calcDesc } from '../../utils/helpers';
 import { db } from '../../lib/db';
+import PropertyModal from '../Modals/PropertyModal';
 
 export default function PropertiesList() {
-  const { properties, records, reloadData } = useAppContext();
+  const { properties, records, reloadData, showToast } = useAppContext();
+
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingId, setEditingId] = React.useState(null);
 
   const handleEdit = (id) => {
-    // To be implemented: Open property modal
-    alert('Edit ' + id);
+    setEditingId(id);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Eliminar propiedad y registros?')) return;
-    await db.deleteProperty(id);
-    reloadData();
+    try {
+      await db.deleteProperty(id);
+      showToast('🗑 Propiedad eliminada');
+      reloadData();
+    } catch (e) {
+      showToast('⚠️ Error eliminando: ' + e.message);
+    }
   };
 
   const openAddProp = () => {
-    // To be implemented
-    alert('Open add prop modal');
+    setEditingId(null);
+    setIsModalOpen(true);
   };
 
   if (!properties.length) {
@@ -31,6 +40,11 @@ export default function PropertiesList() {
           <div className="et">Sin propiedades</div>
           <button className="btn bp" onClick={openAddProp}>+ Agregar</button>
         </div>
+        <PropertyModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          editId={editingId} 
+        />
       </section>
     );
   }
@@ -66,6 +80,12 @@ export default function PropertiesList() {
           );
         })}
       </div>
+      
+      <PropertyModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        editId={editingId} 
+      />
     </section>
   );
 }

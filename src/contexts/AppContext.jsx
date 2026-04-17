@@ -10,6 +10,16 @@ export function AppProvider({ children }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Toast
+  const [toast, setToast] = useState('');
+  let toastTimer = React.useRef(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 2500);
+  };
+
   // Load initial data
   useEffect(() => {
     async function loadAll() {
@@ -25,8 +35,15 @@ export function AppProvider({ children }) {
     loadAll();
   }, []);
 
-  const login = async (userData) => {
-    const u = await db.saveUser(userData);
+  const login = async (creds) => {
+    const u = await db.login(creds);
+    setUser(u);
+    setProperties(await db.getProperties());
+    setRecords(await db.getRecords());
+  };
+
+  const registerUser = async (data) => {
+    const u = await db.register(data);
     setUser(u);
     setProperties(await db.getProperties());
     setRecords(await db.getRecords());
@@ -44,9 +61,10 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      user, login, logout,
+      user, login, registerUser, logout,
       properties, records,
-      reloadData, loading
+      reloadData, loading,
+      toast, showToast
     }}>
       {children}
     </AppContext.Provider>

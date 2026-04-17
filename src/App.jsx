@@ -10,31 +10,35 @@ import PropertiesList from './components/Screens/PropertiesList';
 import AddRecord from './components/Screens/AddRecord';
 import Projections from './components/Screens/Projections';
 
-function MainLayout() {
-  const { user, loading } = useAppContext();
+function AppContent() {
+  const { user, loading, toast } = useAppContext();
   const [currentScreen, setCurrentScreen] = useState('home');
 
   if (loading) return null;
-  if (!user) return <Login />;
 
   return (
-    <div id="app" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Topbar />
-      <main className="main">
-        {currentScreen === 'home' && <Home />}
-        {currentScreen === 'props' && <PropertiesList />}
-        {currentScreen === 'add' && <AddRecord />}
-        {currentScreen === 'proj' && <Projections />}
-      </main>
-      <BottomNav current={currentScreen} setNav={setCurrentScreen} />
-    </div>
+    <>
+      {!user ? <Login /> : (
+        <div id="app" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Topbar />
+          <main className="main">
+            {currentScreen === 'home' && <Home />}
+            {currentScreen === 'props' && <PropertiesList />}
+            {currentScreen === 'add' && <AddRecord />}
+            {currentScreen === 'proj' && <Projections />}
+          </main>
+          <BottomNav current={currentScreen} setNav={setCurrentScreen} />
+        </div>
+      )}
+      <div className={`toast ${toast ? 'show' : ''}`}>{toast}</div>
+    </>
   );
 }
 
 export default function App() {
   return (
     <AppProvider>
-      <MainLayout />
+      <AppContent />
     </AppProvider>
   );
 }

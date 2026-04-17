@@ -1,96 +1,122 @@
-// lib/db.js
-// Esta capa abstrae el almacenamiento local usando Promesas para simular asincronía.
-// Esto permite que el día de mañana, al conectar Supabase, los componentes de React
-// no necesiten cambiar, solo este archivo.
-
-const DK = 'rentify_mvp_v1';
-const UK = 'rentify_user_v1';
-
-// Simulamos asincronía para preparar la UI para peticiones de red reales
-const delay = (ms = 100) => new Promise(r => setTimeout(r, ms));
-
-function loadRaw() {
-  try {
-    const r = localStorage.getItem(DK) || localStorage.getItem(DK + '_b');
-    if (!r) return { props: [], regs: [] };
-    const p = JSON.parse(r);
-    return { props: p.props || [], regs: p.regs || [] };
-  } catch {
-    return { props: [], regs: [] };
-  }
-}
-
-function saveRaw(data) {
-  try {
-    const j = JSON.stringify(data);
-    localStorage.setItem(DK, j);
-    localStorage.setItem(DK + '_b', j);
-  } catch (e) {
-    console.error('Error guardando DB', e);
-  }
-}
+import { supabase } from './supabase';
 
 export const db = {
   // USER
   async getUser() {
-    await delay();
-    try {
-      const u = localStorage.getItem(UK);
-      return u ? JSON.parse(u) : null;
-    } catch {
-      return null;
-    }
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return { 
+      id: user.id, 
+      mail: user.email, 
+      nom: `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() 
+    };
   },
-  async saveUser(user) {
-    await delay();
-    localStorage.setItem(UK, JSON.stringify(user));
-    return user;
+  async login({ mail, password }) {
+    const { data, error } = await supabase.auth.signInWithPassword({ 
+      email: mail, 
+      password 
+    });
+    if (error) throw error;
+    return this.getUser();
+  },
+  async register({ nom, apellido, mail, password }) {
+    const { data, error } = await supabase.auth.signUp({
+      email: mail,
+      password: password,
+      options: {
+        data: {
+          first_name: nom,
+          last_name: apellido
+        }
+      }
+    });
+    if (error) throw error;
+    return this.getUser();
   },
   async logout() {
-    await delay();
-    localStorage.removeItem(UK);
+    await supabase.auth.signOut();
   },
 
   // PROPERTIES
   async getProperties() {
-    await delay();
-    return loadRaw().props;
+    const { data, error } = await supabase.from('properties').select('*').order('nombre', { ascending: true });
+    if (error) {
+      console.error('Error fetching properties:', error);
+      return [];
+    }
+    return data || [];
   },
   async saveProperty(prop) {
-    await delay();
-    const d = loadRaw();
-    const idx = d.props.findIndex(p => p.id === prop.id);
-    if (idx >= 0) d.props[idx] = prop;
-    else d.props.push(prop);
-    saveRaw(d);
-    return prop;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuario no autenticado');
+
+    if (prop.id) {
+      const { data, error } = await supabase.from('properties').update({
+        nombre: prop.nombre,
+        tipo: prop.tipo,
+        com_def: prop.com_def || 0,
+        inq: prop.inq
+      }).eq('id', prop.id).select().single();
+      if (error) throw error;
+      return data;
+    } else {
+      const { data, error } = await supabase.from('properties').insert([{
+        nombre: prop.nombre,
+        tipo: prop.tipo,
+        com_def: prop.com_def || 0,
+        inq: prop.inq,
+        user_id: user.id
+      }]).select().single();
+      if (error) throw error;
+      return data;
+    }
   },
   async deleteProperty(id) {
-    await delay();
-    const d = loadRaw();
-    d.props = d.props.filter(p => p.id !== id);
-    d.regs = d.regs.filter(r => r.propId !== id);
-    saveRaw(d);
+    const { error } = await supabase.from('properties').delete().eq('id', id);
+    if (error) throw error;
     return true;
   },
 
   // RECORDS
   async getRecords() {
-    await delay();
-    return loadRaw().regs;
+    const { data, error } = await supabase.from('records').select('*').order('anio', { ascending: false }).order('mes', { ascending: false });
+    if (error) {
+      console.error('Error fetching records:', error);
+      return [];
+    }
+    return data || [];
   },
   async saveRecord(record) {
-    await delay();
-    const d = loadRaw();
-    d.regs.push(record);
-    saveRaw(d);
-    return record;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuario no autenticado');
+
+    if (record.id) {
+      const { data, error } = await supabase.from('records').update({
+        mes: record.mes,
+        anio: record.anio,
+        bruto: record.bruto,
+        com_pct: record.com_pct || 0,
+        transf: record.transf || 0
+      }).eq('id', record.id).select().single();
+      if (error) throw error;
+      return data;
+    } else {
+      const { data, error } = await supabase.from('records').insert([{
+        propId: record.propId,
+        mes: record.mes,
+        anio: record.anio,
+        bruto: record.bruto,
+        com_pct: record.com_pct || 0,
+        transf: record.transf || 0,
+        user_id: user.id
+      }]).select().single();
+      if (error) throw error;
+      return data;
+    }
   },
   async deleteRecord(id) {
-    await delay();
-    const d = loadRaw();
-    d.regs = d.regs.filter(r => r.id !== id);
-    saveRaw(d);
+    const { error } = await supabase.from('records').delete().eq('id', id);
+    if (error) throw error;
     return true;
   }
 };
