@@ -4,12 +4,14 @@ import { useAppContext } from '../../contexts/AppContext';
 import { fmt, sortRegs, calcDesc } from '../../utils/helpers';
 import { db } from '../../lib/db';
 import PropertyModal from '../Modals/PropertyModal';
+import PropertyHistoryModal from '../Modals/PropertyHistoryModal';
 
 export default function PropertiesList() {
   const { properties, records, reloadData, showToast } = useAppContext();
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState(null);
+  const [historyPropId, setHistoryPropId] = React.useState(null);
 
   const handleEdit = (id) => {
     setEditingId(id);
@@ -75,7 +77,7 @@ export default function PropertiesList() {
                 <div><div className="lbl">Total neto</div><div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '15px', marginTop: '3px', color: 'var(--a)' }}>{fmt(tn)}</div></div>
                 <div style={{ textAlign: 'right' }}><div className="lbl">Registros</div><div style={{ fontWeight: 600, marginTop: '3px', fontSize: '13px' }}>{rs.length} meses</div></div>
               </div>
-              <button className="btn bs bw bsm" style={{ marginTop: '9px' }} onClick={() => alert('View History')}>Ver historial →</button>
+              <button className="btn bs bw bsm" style={{ marginTop: '9px' }} onClick={() => setHistoryPropId(p.id)}>Ver historial →</button>
             </div>
           );
         })}
@@ -85,6 +87,11 @@ export default function PropertiesList() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         editId={editingId} 
+      />
+      <PropertyHistoryModal
+        isOpen={!!historyPropId}
+        onClose={() => setHistoryPropId(null)}
+        propId={historyPropId}
       />
     </section>
   );

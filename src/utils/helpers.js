@@ -2,7 +2,49 @@
 
 export const uid = () => Math.random().toString(36).substr(2,9) + Date.now().toString(36);
 
-export const fmt = n => (n === null || n === undefined || isNaN(n)) ? '—' : '$' + Math.round(n).toLocaleString('es-AR');
+export const fmtNum = n => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const hasDecimals = n % 1 !== 0;
+  return new Intl.NumberFormat('es-AR', {
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: hasDecimals ? 2 : 0
+  }).format(n);
+};
+
+export const fmt = n => (n === null || n === undefined || isNaN(n)) ? '—' : '$ ' + fmtNum(n);
+
+export const formatCurrencyInput = (value) => {
+  if (value === undefined || value === null) return '';
+  let strVal = value.toString();
+  if (!strVal) return '';
+  
+  strVal = strVal.replace(/[^0-9,]/g, '');
+  const parts = strVal.split(',');
+  if (parts.length > 2) {
+    strVal = parts[0] + ',' + parts.slice(1).join('');
+  }
+  
+  const [intPart, decPart] = strVal.split(',');
+  
+  let intFormatted = intPart;
+  if (intPart !== '') {
+    intFormatted = parseInt(intPart, 10).toString();
+    intFormatted = intFormatted.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  let finalStr = intFormatted;
+  if (decPart !== undefined) {
+    finalStr = intFormatted + ',' + decPart.slice(0, 2);
+  }
+  return finalStr ? '$ ' + finalStr : '';
+};
+
+export const parseCurrencyValue = (val) => {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  const str = val.toString().replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.');
+  return parseFloat(str) || 0;
+};
 export const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 export const mi = m => MES.indexOf(m);
 

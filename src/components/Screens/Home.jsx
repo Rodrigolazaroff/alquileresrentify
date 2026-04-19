@@ -56,7 +56,7 @@ export default function Home() {
     },
     scales: {
       x: { ticks: { color: '#5a5a72', font: { size: 9 } }, grid: { color: '#2e2e3a' } },
-      y: { ticks: { color: '#5a5a72', font: { size: 9 }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' }, grid: { color: '#2e2e3a' } }
+      y: { ticks: { color: '#5a5a72', font: { size: 9 }, callback: v => '$ ' + (v / 1000).toFixed(0) + 'k' }, grid: { color: '#2e2e3a' } }
     }
   };
 

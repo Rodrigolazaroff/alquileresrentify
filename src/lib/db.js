@@ -84,7 +84,10 @@ export const db = {
       console.error('Error fetching records:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map(r => ({
+      ...r,
+      propId: r.propId || r.propid
+    }));
   },
   async saveRecord(record) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -102,7 +105,7 @@ export const db = {
       return data;
     } else {
       const { data, error } = await supabase.from('records').insert([{
-        propId: record.propId,
+        propid: record.propId,
         mes: record.mes,
         anio: record.anio,
         bruto: record.bruto,
