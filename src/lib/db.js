@@ -8,8 +8,17 @@ export const db = {
     return { 
       id: user.id, 
       mail: user.email, 
+      first_name: user.user_metadata?.first_name || '',
+      last_name: user.user_metadata?.last_name || '',
       nom: `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() 
     };
+  },
+  async updateProfile({ first_name, last_name }) {
+    const { data, error } = await supabase.auth.updateUser({
+      data: { first_name, last_name }
+    });
+    if (error) throw error;
+    return this.getUser();
   },
   async login({ mail, password }) {
     const { data, error } = await supabase.auth.signInWithPassword({ 

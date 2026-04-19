@@ -31,7 +31,9 @@ export default function PropertyModal({ isOpen, onClose, editId }) {
     }
   }, [isOpen, editId, properties]);
 
+  /*
   if (!isOpen) return null;
+  */
 
   const handleSave = async () => {
     if (!nombre.trim()) {
@@ -49,8 +51,15 @@ export default function PropertyModal({ isOpen, onClose, editId }) {
         inq: inq.trim()
       });
       await reloadData();
-      showToast(editId ? '✅ Propiedad actualizada' : '✅ Propiedad guardada');
-      onClose();
+      
+      const msg = editId ? '✅ Propiedad actualizada' : '✅ Propiedad guardada';
+      onClose(); // Cerrar el box primero
+      
+      // Mostrar toast después de un breve delay para que la transición sea fluida
+      setTimeout(() => {
+        showToast(msg);
+      }, 200);
+      
     } catch (e) {
       showToast('⚠️ Error: ' + e.message);
     } finally {
@@ -59,7 +68,7 @@ export default function PropertyModal({ isOpen, onClose, editId }) {
   };
 
   return (
-    <div className="mb" onClick={onClose} style={{ zIndex: 1000 }}>
+    <div className="mb" onClick={onClose} style={{ zIndex: 1000, display: isOpen ? 'flex' : 'none' }}>
       {/* Detener la propagación del click para no cerrar al dar click dentro del modal  */}
       <div className="mo" onClick={e => e.stopPropagation()}>
         <div className="mh"></div>
@@ -95,7 +104,10 @@ export default function PropertyModal({ isOpen, onClose, editId }) {
         
         <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
           <button className="btn bs bw" onClick={onClose} disabled={loading}>Cancelar</button>
-          <button className="btn bp bw" onClick={handleSave} disabled={loading}>{loading ? 'Guardando...' : 'Guardar'}</button>
+          <button className="btn bp bw" onClick={handleSave} disabled={loading}>
+            {loading && <div className="lds-dual-ring"></div>}
+            {loading ? 'Guardando...' : 'Guardar'}
+          </button>
         </div>
       </div>
     </div>

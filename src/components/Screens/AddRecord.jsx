@@ -154,6 +154,7 @@ export default function AddRecord() {
 
           <div style={{ marginTop: '22px' }}>
             <button type="submit" className="btn bp bw" disabled={loading} style={{ padding: '12px', fontSize: '14px', fontWeight: '700' }}>
+              {loading && <div className="lds-dual-ring"></div>}
               {loading ? 'Guardando...' : 'Registrar Pago'}
             </button>
           </div>

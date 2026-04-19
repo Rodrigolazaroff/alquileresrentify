@@ -59,6 +59,11 @@ export function AppProvider({ children }) {
     setRecords(await db.getRecords());
   };
 
+  const updateProfile = async (data) => {
+    const updatedUser = await db.updateProfile(data);
+    setUser(updatedUser);
+  };
+
   return (
     <AppContext.Provider value={{
       user, login, registerUser, logout,

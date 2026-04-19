@@ -34,6 +34,11 @@ export default function PropertiesList() {
     setIsModalOpen(true);
   };
 
+  const closePropModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+  };
+
   if (!properties.length) {
     return (
       <section className="sc on">
@@ -44,7 +49,7 @@ export default function PropertiesList() {
         </div>
         <PropertyModal 
           isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
+          onClose={closePropModal} 
           editId={editingId} 
         />
       </section>
@@ -85,7 +90,7 @@ export default function PropertiesList() {
       
       <PropertyModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={closePropModal} 
         editId={editingId} 
       />
       <PropertyHistoryModal

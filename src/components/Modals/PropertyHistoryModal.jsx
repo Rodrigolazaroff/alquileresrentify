@@ -66,9 +66,12 @@ export default function PropertyHistoryModal({ isOpen, onClose, propId }) {
     if (!window.confirm('¿Eliminar este registro?')) return;
     try {
       await db.deleteRecord(id);
-      showToast('🗑 Registro eliminado');
-      setSelectedRecordId(null);
-      reloadData();
+      setSelectedRecordId(null); // Cerrar el detalle primero
+      
+      setTimeout(async () => {
+        showToast('🗑 Registro eliminado');
+        await reloadData();
+      }, 150);
     } catch (e) {
       showToast('⚠️ Error eliminando: ' + e.message);
     }
@@ -78,23 +81,8 @@ export default function PropertyHistoryModal({ isOpen, onClose, propId }) {
   const cSelected = rSelected ? calcDesc(rSelected) : null;
 
   return (
-    <div 
-      className="mb" 
-      onClick={onClose} 
-      style={{ zIndex: 1000, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <div 
-        className="mo" 
-        onClick={e => e.stopPropagation()} 
-        style={{ 
-          maxHeight: '86vh', 
-          width: '92%', 
-          maxWidth: '480px', 
-          borderRadius: '20px', 
-          borderBottom: '1px solid var(--bd)',
-          animation: 'fi 0.25s ease'
-        }}
-      >
+    <div className="mb" onClick={onClose} style={{ zIndex: 1000 }}>
+      <div className="mo" onClick={e => e.stopPropagation()}>
         <div className="mh"></div>
 
         {/* VISTA: DETALLE DE UN MES */}
@@ -147,7 +135,7 @@ export default function PropertyHistoryModal({ isOpen, onClose, propId }) {
             <>
               <div className="cd" style={{ padding: '11px', marginBottom: '10px' }}>
                 <div className="lbl" style={{ marginBottom: '5px' }}>Evolución neta</div>
-                <div className="cw" style={{ height: '155px' }}>
+                <div className="cw">
                   <Line data={chartData} options={chartOpts} />
                 </div>
               </div>

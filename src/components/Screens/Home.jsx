@@ -82,42 +82,45 @@ export default function Home() {
           <div className="ex">Agregá tu primera propiedad en la solapa Propiedades para empezar.</div>
         </div>
       ) : (
-        <>
-          <div className="sg">
-            <div className="sb"><div className="lbl">Neto {lastP}</div><div className="bnum" style={{ fontSize: '19px', marginTop: '5px', color: 'var(--a)' }}>{fmt(netoU)}</div></div>
-            <div className="sb"><div className="lbl">Acumulado {yr}</div><div className="bnum" style={{ fontSize: '19px', marginTop: '5px' }}>{anual > 0 ? fmt(anual) : '—'}</div></div>
-          </div>
-          <div className="sg">
-            <div className="sb"><div className="lbl">Propiedades</div><div className="bnum" style={{ fontSize: '24px', marginTop: '5px', color: 'var(--a2)' }}>{properties.length}</div></div>
-            <div className="sb"><div className="lbl">Meses cargados</div><div className="bnum" style={{ fontSize: '24px', marginTop: '5px' }}>{allRegs.length}</div></div>
+        <div className="home-grid">
+          <div className="home-main">
+            <div className="sg">
+              <div className="sb"><div className="lbl">Neto {lastP}</div><div className="bnum" style={{ fontSize: '19px', marginTop: '5px', color: 'var(--a)' }}>{fmt(netoU)}</div></div>
+              <div className="sb"><div className="lbl">Acumulado {yr}</div><div className="bnum" style={{ fontSize: '19px', marginTop: '5px' }}>{anual > 0 ? fmt(anual) : '—'}</div></div>
+            </div>
+            <div className="sg">
+              <div className="sb"><div className="lbl">Propiedades</div><div className="bnum" style={{ fontSize: '24px', marginTop: '5px', color: 'var(--a2)' }}>{properties.length}</div></div>
+              <div className="sb"><div className="lbl">Meses cargados</div><div className="bnum" style={{ fontSize: '24px', marginTop: '5px' }}>{allRegs.length}</div></div>
+            </div>
+
+            {chartData && (
+              <div className="cd">
+                <div className="lbl" style={{ marginBottom: '7px' }}>Ingreso neto mensual</div>
+                <div className="cw"><Bar data={chartData} options={chartOpts} /></div>
+              </div>
+            )}
           </div>
 
-          {chartData && (
-            <div className="cd">
-              <div className="lbl" style={{ marginBottom: '7px' }}>Ingreso neto mensual</div>
-              <div className="cw"><Bar data={chartData} options={chartOpts} /></div>
-            </div>
-          )}
-          
-          <div className="dv"></div>
-          <div className="lbl" style={{ marginBottom: '10px' }}>Propiedades</div>
-          <div>
-            {properties.map(p => {
-              const pData = getPropNet(p.id);
-              return (
-                <div key={p.id} className="pc">
-                  <div className="ph">
-                    <div><div className="pn">{p.nombre}</div><div className="pt">{p.tipo}{p.inq ? ' · ' + p.inq : ''}</div></div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: 'var(--fd)', fontWeight: '700', fontSize: '15px', color: 'var(--a)' }}>{pData ? fmt(pData.net) : '—'}</div>
-                      <div className="pt">{pData ? `${pData.last.mes} ${pData.last.anio}` : 'Sin registros'}</div>
+          <div className="home-side">
+            <div className="lbl" style={{ marginBottom: '10px' }}>Propiedades</div>
+            <div>
+              {properties.map(p => {
+                const pData = getPropNet(p.id);
+                return (
+                  <div key={p.id} className="pc">
+                    <div className="ph">
+                      <div><div className="pn">{p.nombre}</div><div className="pt">{p.tipo}{p.inq ? ' · ' + p.inq : ''}</div></div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontFamily: 'var(--fd)', fontWeight: '700', fontSize: '15px', color: 'var(--a)' }}>{pData ? fmt(pData.net) : '—'}</div>
+                        <div className="pt">{pData ? `${pData.last.mes} ${pData.last.anio}` : 'Sin registros'}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </>
+        </div>
       )}
     </section>
   );
