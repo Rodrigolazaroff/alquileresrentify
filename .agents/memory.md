@@ -38,5 +38,7 @@
 - [x] Reset de Estados: Limpieza de valores iniciales (renta vacía, fecha actual) para un inicio de uso desde cero sin datos de ejemplo.
 - [x] Lógica de Indexación Compuesta: Cálculo directo por meses calendario exactos (se eliminó el desfase para mayor simplicidad).
 - [x] Estabilidad de Fechas: Implementación de T12:00:00 en el manejo de fechas para evitar desfases por zona horaria.
-- [x] Visualización de Datos: Gráfico de tendencia IPC restaurado y tabla con columna de Monto de Aumento en pesos ($).
 - [x] Sistema de Estimación Inteligente: Alerta visual y lógica de repetición de índices cuando no hay datos oficiales (meses futuros o no publicados).
+- [x] Progressive Web App (PWA): Integración de `vite-plugin-pwa` y manifest para permitir la instalación nativa en móviles (iOS/Android).
+- [x] Optimización Mobile First: Implementación estricta de `inputMode="numeric"` y `pattern="[0-9]*"` en todos los campos de divisas para forzar apertura del pad numérico del celular.
+- [x] Rediseño UI Proyecciones: Los meses de inicio y frecuencia inician en blanco (1 a 12 meses), capitalización automática de fechas, limpieza general de UI (título homogeneizado y borrado de box informativo) e integración de **Gráfico de Evolución de Alquiler Simulado** en lugar del histórico IPC.

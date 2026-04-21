@@ -9,7 +9,6 @@ import {
   RefreshCw, 
   Calendar, 
   DollarSign, 
-  Maximize2, 
   AlertTriangle 
 } from 'lucide-react';
 import {
@@ -41,9 +40,9 @@ const API_KEY = import.meta.env.VITE_ARGENSTATS_KEY;
 
 export default function Projections() {
   const [rentInput, setRentInput] = useState('');
-  const [frequency, setFrequency] = useState(3);
-  const [startMonth, setStartMonth] = useState(new Date().getMonth() + 1);
-  const [startYear, setStartYear] = useState(new Date().getFullYear());
+  const [frequency, setFrequency] = useState('');
+  const [startMonth, setStartMonth] = useState('');
+  const [startYear, setStartYear] = useState('');
   
   const [inflationData, setInflationData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +56,6 @@ export default function Projections() {
   const fetchInflation = async () => {
     setLoading(true);
     try {
-      // Fetch a wide range to cover possible start dates and future projections
       const from = "2022-01-01";
       const to = new Date().toISOString().split('T')[0];
       
@@ -68,24 +66,23 @@ export default function Projections() {
         }
       });
       
-      if (!resp.ok) throw new Error('Error al obtener datos de ArgenStats');
+      if (!resp.ok) throw new Error('Error al obtener datos');
       const json = await resp.json();
       
       if (json.success && json.data) {
-        // Map to a common format
         const mapped = json.data.map(d => ({
-          fecha: d.date.substring(0, 7), // "YYYY-MM"
+          fecha: d.date.substring(0, 7),
           valor: d.values.monthly,
           index: d.index
         }));
         setInflationData(mapped);
       } else {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Formato inválido');
       }
       setError(null);
     } catch (err) {
       console.error(err);
-      setError('Error al sincronizar con ArgenStats. Usando modo offline.');
+      setError('Error al sincronizar con ArgenStats.');
     } finally {
       setLoading(false);
     }
@@ -112,22 +109,15 @@ export default function Projections() {
 
   const projections = useMemo(() => {
     const rentValue = parseInputToNumber(rentInput);
-    if (inflationData.length === 0 || !rentValue || rentValue === 0) return [];
+    if (inflationData.length === 0 || !rentValue || rentValue === 0 || frequency === '' || startMonth === '' || startYear === '') return [];
 
     const result = [];
     const frequencyNum = Number(frequency);
-    
-    // Convert start to months since epoch
-    const startMonthYear = startYear * 12 + (startMonth - 1);
-    
-    // We need the index values to apply the formula: Rent * (Index_End / Index_Start)
-    // To calculate the increase of the 1st period (e.g. Aug to Oct), 
-    // we need the index of July (base) and Oct (target).
+    const startMonthYear = Number(startYear) * 12 + (Number(startMonth) - 1);
     
     const today = new Date();
     const currentMonthYear = today.getFullYear() * 12 + today.getMonth();
     
-    // Show at least 2 years or until today
     const totalMonthsToShow = Math.max(currentMonthYear - startMonthYear + frequencyNum, frequencyNum * 4);
     const totalPeriods = Math.ceil(totalMonthsToShow / frequencyNum);
     
@@ -142,10 +132,9 @@ export default function Projections() {
       const periodDate = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-01`;
 
       if (pNum === 0) {
-        // Base Period
         result.push({
           id: 1,
-          label: `${frequencyNum === 3 ? 'Trim' : frequencyNum === 4 ? 'Cuatrim' : 'Per'}. 1`,
+          label: `${frequencyNum === 3 ? 'Trim' : frequencyNum === 4 ? 'Cuatrim' : frequencyNum === 6 ? 'Sem' : 'Per'}. 1`,
           fecha: periodDate,
           oldRent: Math.round(rentValue),
           newRent: Math.round(rentValue),
@@ -155,10 +144,6 @@ export default function Projections() {
           hasEstimation: false
         });
       } else {
-        // Rent = BaseRent * (Index_Target / Index_Base)
-        // Index_Base is the index at startMonth-1 (Jul if start is Aug)
-        // Index_Target is the index at targetMonth-1 (Oct if increase is Nov)
-        
         const baseMonthYear = startMonthYear - 1;
         const targetMonthYearEnd = targetMonthYear - 1;
 
@@ -175,7 +160,6 @@ export default function Projections() {
         if (baseEntry && targetEntry) {
           multiplier = targetEntry.index / baseEntry.index;
         } else {
-          // Fallback to manual compounding if indexes are missing or estimation needed
           let manualMult = 1;
           for (let k = 0; k < monthOffset; k++) {
             const m = startMonthYear + k;
@@ -191,7 +175,6 @@ export default function Projections() {
           multiplier = manualMult;
         }
 
-        // Build simple breakdown for visual
         for (let k = 0; k < frequencyNum; k++) {
           const m = (startMonthYear + monthOffset - frequencyNum) + k;
           const mStr = `${Math.floor(m/12)}-${String((m%12)+1).padStart(2,'0')}`;
@@ -208,20 +191,19 @@ export default function Projections() {
 
         result.push({
           id: pNum + 1,
-          label: `${frequencyNum === 3 ? 'Trim' : frequencyNum === 4 ? 'Cuatrim' : 'Per'}. ${pNum + 1}`,
+          label: `${frequencyNum === 3 ? 'Trim' : frequencyNum === 4 ? 'Cuatrim' : frequencyNum === 6 ? 'Sem' : 'Per'}. ${pNum + 1}`,
           fecha: periodDate,
-          oldRent: 0, // Not strictly needed for formula 1
+          oldRent: 0,
           newRent: Math.round(newRentValue),
           increaseAmount: Math.round(newRentValue - (result[pNum-1]?.newRent || rentValue)),
           percent: ((multiplier / (result[pNum-1]?.multiplier || 1) - 1) * 100).toFixed(2),
-          multiplier, // save for next loop calc if needed, but we use base rent
+          multiplier,
           breakdown: monthlyDetails,
           hasEstimation
         });
       }
     }
     
-    // Fix percentages for display to show variation vs PREVIOUS rent
     for (let i = 1; i < result.length; i++) {
         const prevRent = result[i-1].newRent;
         const currRent = result[i].newRent;
@@ -231,19 +213,19 @@ export default function Projections() {
     return result;
   }, [rentInput, frequency, startMonth, startYear, inflationData]);
 
-  const chartData = useMemo(() => {
-    if (inflationData.length === 0) return { labels: [], datasets: [] };
-    const subset = inflationData.slice(-12);
+  const projectedChartData = useMemo(() => {
+    if (projections.length === 0) return { labels: [], datasets: [] };
     return {
-      labels: subset.map(d => {
-        const date = new Date(d.fecha + '-15');
-        return date.toLocaleDateString('es-AR', { month: 'short' });
+      labels: projections.map(p => {
+        const date = new Date(p.fecha + 'T12:00:00');
+        // Usamos substring para simular una etiqueta corta
+        return date.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' }).toLocaleUpperCase();
       }),
       datasets: [
         {
           fill: true,
-          label: 'Inflación %',
-          data: subset.map(d => d.valor),
+          label: 'Alquiler $',
+          data: projections.map(p => p.newRent),
           borderColor: '#6ab5ff',
           backgroundColor: 'rgba(106, 181, 255, 0.1)',
           tension: 0.4,
@@ -253,7 +235,7 @@ export default function Projections() {
         },
       ],
     };
-  }, [inflationData]);
+  }, [projections]);
 
   const lastTwo = useMemo(() => {
     if (projections.length < 1) return null;
@@ -277,8 +259,11 @@ export default function Projections() {
   ];
 
   return (
-    <section className="sc on">
-      <div className="st" style={{ textAlign: 'center', fontSize: '26px', color: '#6ab5ff', letterSpacing: '1.5px', marginBottom: '24px' }}>CALCULADORA ARGENSTATS</div>
+    <div className="tab-pane active fade in">
+      <div className="list-header" style={{ marginBottom: '24px' }}>
+        <h2>PROYECCIONES</h2>
+        <div className="list-subtitle">Calculadora oficial de evolución del alquiler vía índices</div>
+      </div>
 
       <div className="cd" style={{ padding: '20px', marginBottom: '24px' }}>
         <div className="sg" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
@@ -287,7 +272,9 @@ export default function Projections() {
             <div style={{ position: 'relative' }}>
               <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--t2)' }}>$</span>
               <input 
-                type="text" 
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="fi" 
                 style={{ paddingLeft: '28px' }}
                 value={rentInput} 
@@ -298,20 +285,23 @@ export default function Projections() {
           </div>
           <div className="fg">
             <label className="fl">Mes Inicio</label>
-            <select className="fi" value={startMonth} onChange={e => setStartMonth(Number(e.target.value))}>
+            <select className="fi" value={startMonth} onChange={e => setStartMonth(e.target.value)}>
+              <option value="" disabled>Seleccionar</option>
               {monthsList.map(m => <option key={m.v} value={m.v}>{m.n}</option>)}
             </select>
           </div>
           <div className="fg">
             <label className="fl">Año Inicio</label>
-            <select className="fi" value={startYear} onChange={e => setStartYear(Number(e.target.value))}>
+            <select className="fi" value={startYear} onChange={e => setStartYear(e.target.value)}>
+              <option value="" disabled>Seleccionar</option>
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
           <div className="fg">
             <label className="fl">Frecuencia</label>
-            <select className="fi" value={frequency} onChange={e => setFrequency(Number(e.target.value))}>
-              {[1,2,3,4,6,12].map(n => <option key={n} value={n}>{n} {n===1?'mes':'meses'}</option>)}
+            <select className="fi" value={frequency} onChange={e => setFrequency(e.target.value)}>
+              <option value="" disabled>Seleccionar</option>
+              {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n} {n===1?'mes':'meses'}</option>)}
             </select>
           </div>
         </div>
@@ -322,7 +312,7 @@ export default function Projections() {
           <RefreshCw className="lds-dual-ring" style={{ width: 24, height: 24, color: 'var(--a)' }} />
           <div style={{ marginTop: '12px', color: 'var(--t2)' }}>Conectando con ArgenStats...</div>
         </div>
-      ) : (
+      ) : projections.length > 0 ? (
         <div className="home-grid">
           <div className="home-main">
             {/* SUMMARY CARDS */}
@@ -330,14 +320,14 @@ export default function Projections() {
               <div className="sg" style={{ marginBottom: '20px' }}>
                 <div className="cd" style={{ textAlign: 'center', background: 'rgba(24,24,31,.8)', border: '1px solid var(--bd)' }}>
                   <div className="lbl" style={{ color: 'var(--t2)', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>Hasta</div>
-                  <div style={{ color: 'var(--t3)', fontSize: '13px', marginBottom: '5px' }}>
+                  <div style={{ color: 'var(--t3)', fontSize: '13px', marginBottom: '5px', textTransform: 'capitalize' }}>
                     {new Date(lastTwo.prev.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
                   </div>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: '26px', fontWeight: '800' }}>{formatCurrency(lastTwo.prev.newRent)}</div>
                 </div>
                 <div className="cd" style={{ textAlign: 'center', background: 'rgba(106, 181, 255, 0.05)', border: '1px solid rgba(106, 181, 255, 0.3)' }}>
                   <div className="lbl" style={{ color: '#6ab5ff', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>Desde</div>
-                  <div style={{ color: '#6ab5ff', opacity: .7, fontSize: '13px', marginBottom: '5px' }}>
+                  <div style={{ color: '#6ab5ff', opacity: .7, fontSize: '13px', marginBottom: '5px', textTransform: 'capitalize' }}>
                     {new Date(lastTwo.curr.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
                   </div>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: '26px', fontWeight: '800', color: '#fff' }}>{formatCurrency(lastTwo.curr.newRent)}</div>
@@ -365,13 +355,6 @@ export default function Projections() {
                 </div>
               </div>
             )}
-
-            {/* FORMULA INFO */}
-            <div className="cd" style={{ padding: '12px 20px', marginBottom: '20px', border: '1px dashed rgba(255,255,255,.1)', background: 'transparent' }}>
-              <div style={{ fontSize: '11px', color: 'var(--t2)', textAlign: 'center' }}>
-                Fórmula aplicada: <span style={{ color: '#fff' }}>Valor Inicial * (Índice Final / Índice Inicial)</span>
-              </div>
-            </div>
 
             {/* MAIN TABLE */}
             <div className="cd" style={{ padding: '0', overflow: 'hidden' }}>
@@ -417,11 +400,11 @@ export default function Projections() {
                         <tr>
                           <td colSpan="6" style={{ padding: '0', background: 'rgba(0,0,0,.15)' }}>
                             <div style={{ padding: '15px' }}>
-                              <div style={{ marginBottom: '10px', fontSize: '11px', fontWeight: '600', color: 'var(--t2)' }}>Variaciones del periodo:</div>
+                              <div style={{ marginBottom: '10px', fontSize: '11px', fontWeight: '600', color: 'var(--t2)' }}>Variaciones del periodo (inflación usada):</div>
                               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                 {p.breakdown.map((m, idx) => (
                                   <div key={idx} style={{ background: 'rgba(255,255,255,.05)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--bd)' }}>
-                                    <div style={{ fontSize: '10px', opacity: .6 }}>{new Date(m.mDate + 'T12:00:00').toLocaleDateString('es-AR', { month: 'short' })}</div>
+                                    <div style={{ fontSize: '10px', opacity: .6, textTransform: 'capitalize' }}>{new Date(m.mDate + 'T12:00:00').toLocaleDateString('es-AR', { month: 'short' })}</div>
                                     <div style={{ fontWeight: '700', color: m.est ? 'var(--t3)' : 'var(--a)' }}>{m.val}% {m.est ? '(e)' : ''}</div>
                                   </div>
                                 ))}
@@ -439,33 +422,27 @@ export default function Projections() {
 
           <div className="home-side">
             <div className="cd">
-              <div className="lbl" style={{ marginBottom: '12px' }}>Histórico IPC</div>
-              <div style={{ height: '180px' }}>
+              <div className="lbl" style={{ marginBottom: '12px' }}>Evolución del Alquiler</div>
+              <div style={{ height: '240px' }}>
                 <Line 
-                  data={chartData} 
+                  data={projectedChartData} 
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                      y: { grid: { color: '#2e2e3a' }, ticks: { color: '#5a5a72', font: { size: 9 } } },
+                      y: { grid: { color: '#2e2e3a' }, ticks: { color: '#5a5a72', font: { size: 9 }, callback: (v)=>'$'+v/1000+'k' } },
                       x: { grid: { display: false }, ticks: { color: '#5a5a72', font: { size: 9 } } }
                     }
                   }} 
                 />
               </div>
             </div>
-
-            <div className="cd" style={{ background: 'rgba(106, 181, 255, 0.05)', borderColor: 'rgba(106, 181, 255, 0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <Info size={16} color="#6ab5ff" />
-                <div style={{ fontWeight: '700', color: '#6ab5ff', fontSize: '13px' }}>Método ArgenStats</div>
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--t2)', lineHeight: '1.6' }}>
-                Estamos utilizando la fórmula oficial de división de índices. El sistema toma el valor exacto del índice al inicio y al final del periodo para garantizar un resultado legalmente exacto.
-              </p>
-            </div>
           </div>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--t2)', background: 'rgba(255,255,255,.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,.1)' }}>
+          <div>Ingresá los datos del alquiler arriba para ver la simulación completa.</div>
         </div>
       )}
 
@@ -474,6 +451,6 @@ export default function Projections() {
         .hover-row:active { background: rgba(255,255,255,.08); }
         th { font-family: var(--fb); text-transform: uppercase; font-size: 10px; letter-spacing: .5px; }
       `}} />
-    </section>
+    </div>
   );
 }
