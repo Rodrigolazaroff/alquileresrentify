@@ -1,0 +1,2 @@
+/api-argenstats/*  https://argenstats.com/api/v1/:splat  200
+/*    /index.html   200
