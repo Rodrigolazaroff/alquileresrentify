@@ -91,75 +91,77 @@ export default function AddRecord() {
       <div className="st">Registrador</div>
       <div className="ss">Cargar pagos y retenciones del período</div>
       
-      {properties.length === 0 ? (
-        <div className="emp">
-          <div className="ei">🏢</div>
-          <div className="et">No tenés propiedades</div>
-          <div className="ex">Cargá tu primera propiedad en la cartera para empezar a registrarle pagos.</div>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="cd cd-a">
-          <div className="fg">
-            <label className="fl">Propiedad a imputar</label>
-            <select name="propId" value={form.propId} onChange={handlePropChange} className="fi" required>
-              <option value="">-- Seleccionar Propiedad --</option>
-              {properties.map(p => (
-                <option key={p.id} value={p.id}>{p.nombre}</option>
-              ))}
-            </select>
+      <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+        {properties.length === 0 ? (
+          <div className="emp">
+            <div className="ei">🏢</div>
+            <div className="et">No tenés propiedades</div>
+            <div className="ex">Cargá tu primera propiedad en la cartera para empezar a registrarle pagos.</div>
           </div>
-
-          <div className="fr">
+        ) : (
+          <form onSubmit={handleSubmit} className="cd cd-a">
             <div className="fg">
-              <label className="fl">Mes</label>
-              <select name="mes" value={form.mes} onChange={handleChange} className="fi" required>
-                <option value="1">Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Septiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
+              <label className="fl">Propiedad a imputar</label>
+              <select name="propId" value={form.propId} onChange={handlePropChange} className="fi" required>
+                <option value="">-- Seleccionar Propiedad --</option>
+                {properties.map(p => (
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
+                ))}
               </select>
             </div>
-            <div className="fg">
-              <label className="fl">Año</label>
-              <input type="number" name="anio" value={form.anio} onChange={handleChange} className="fi" required />
+
+            <div className="fr">
+              <div className="fg">
+                <label className="fl">Mes</label>
+                <select name="mes" value={form.mes} onChange={handleChange} className="fi" required>
+                  <option value="1">Enero</option>
+                  <option value="2">Febrero</option>
+                  <option value="3">Marzo</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Mayo</option>
+                  <option value="6">Junio</option>
+                  <option value="7">Julio</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Septiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+                </select>
+              </div>
+              <div className="fg">
+                <label className="fl">Año</label>
+                <input type="number" name="anio" value={form.anio} onChange={handleChange} className="fi" required />
+              </div>
             </div>
-          </div>
 
-          <div className="dv"></div>
+            <div className="dv"></div>
 
-          <div className="fg">
-            <label className="fl">Ingreso Bruto</label>
-            <input type="text" name="bruto" value={form.bruto} onChange={handleMoneyChange} className="fi" placeholder="Monto total pagado" required />
-            <div className="fh" style={{ color: 'var(--a)' }}>Monto base antes de comisiones</div>
-          </div>
-
-          <div className="fr">
             <div className="fg">
-              <label className="fl">Tu Comisión (%)</label>
-              <input type="number" step="0.01" name="com_pct" value={form.com_pct} onChange={handleChange} className="fi" placeholder="0" />
+              <label className="fl">Ingreso Bruto</label>
+              <input type="text" name="bruto" value={form.bruto} onChange={handleMoneyChange} className="fi" placeholder="Monto total pagado" required />
+              <div className="fh" style={{ color: 'var(--a)' }}>Monto base antes de comisiones</div>
             </div>
-            <div className="fg">
-              <label className="fl">Neto a Propietario</label>
-              <input type="text" name="transf" value={form.transf} onChange={handleMoneyChange} className="fi" placeholder="Calculado auto" />
-            </div>
-          </div>
 
-          <div style={{ marginTop: '22px' }}>
-            <button type="submit" className="btn bp bw" disabled={loading} style={{ padding: '12px', fontSize: '14px', fontWeight: '700' }}>
-              {loading && <div className="lds-dual-ring"></div>}
-              {loading ? 'Guardando...' : 'Registrar Pago'}
-            </button>
-          </div>
-        </form>
-      )}
+            <div className="fr">
+              <div className="fg">
+                <label className="fl">Tu Comisión (%)</label>
+                <input type="number" step="0.01" name="com_pct" value={form.com_pct} onChange={handleChange} className="fi" placeholder="0" />
+              </div>
+              <div className="fg">
+                <label className="fl">Neto a Propietario</label>
+                <input type="text" name="transf" value={form.transf} onChange={handleMoneyChange} className="fi" placeholder="Calculado auto" />
+              </div>
+            </div>
+
+            <div style={{ marginTop: '22px' }}>
+              <button type="submit" className="btn bp bw" disabled={loading} style={{ padding: '12px', fontSize: '14px', fontWeight: '700' }}>
+                {loading && <div className="lds-dual-ring" style={{ borderLeftColor: '#000', borderRightColor: '#000' }}></div>}
+                {loading ? 'Guardando...' : 'Registrar Pago'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </section>
   );
 }
