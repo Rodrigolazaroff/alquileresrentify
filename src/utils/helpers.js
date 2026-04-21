@@ -46,7 +46,16 @@ export const parseCurrencyValue = (val) => {
   return parseFloat(str) || 0;
 };
 export const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-export const mi = m => MES.indexOf(m);
+export const mi = m => {
+  if (typeof m === 'number') return m - 1;
+  const asNum = parseInt(m);
+  if (!isNaN(asNum) && asNum >= 1 && asNum <= 12) return asNum - 1;
+  return MES.indexOf(m);
+};
+export const getMesStr = m => {
+  const idx = mi(m);
+  return idx >= 0 ? MES[idx] : String(m);
+};
 
 export const sortRegs = a => [...a].sort((x, y) => x.anio !== y.anio ? x.anio - y.anio : mi(x.mes) - mi(y.mes));
 

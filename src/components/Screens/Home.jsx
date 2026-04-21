@@ -1,7 +1,7 @@
 // src/components/Screens/Home.jsx
 import React, { useMemo } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
-import { fmt, sortRegs, calcDesc, mi } from '../../utils/helpers';
+import { fmt, sortRegs, calcDesc, mi, getMesStr } from '../../utils/helpers';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
@@ -18,7 +18,7 @@ export default function Home() {
 
   if (allRegs.length) {
     const last = allRegs[allRegs.length - 1];
-    lastP = `${last.mes} ${last.anio}`;
+    lastP = `${getMesStr(last.mes)} ${last.anio}`;
     allRegs.filter(r => r.mes === last.mes && r.anio === last.anio).forEach(r => netoU += calcDesc(r).neto);
     anual = allRegs.filter(r => r.anio === yr).reduce((s, r) => s + calcDesc(r).neto, 0);
   }
@@ -28,7 +28,7 @@ export default function Home() {
     if (!allRegs.length) return null;
     const bp = {};
     allRegs.forEach(r => {
-      const k = `${r.mes} ${String(r.anio).slice(2)}`;
+      const k = `${getMesStr(r.mes)} ${String(r.anio).slice(2)}`;
       if (!bp[k]) bp[k] = { n: 0, o: r.anio * 100 + mi(r.mes) };
       bp[k].n += calcDesc(r).neto;
     });
@@ -112,7 +112,7 @@ export default function Home() {
                       <div><div className="pn">{p.nombre}</div><div className="pt">{p.tipo}{p.inq ? ' · ' + p.inq : ''}</div></div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontFamily: 'var(--fd)', fontWeight: '700', fontSize: '15px', color: 'var(--a)' }}>{pData ? fmt(pData.net) : '—'}</div>
-                        <div className="pt">{pData ? `${pData.last.mes} ${pData.last.anio}` : 'Sin registros'}</div>
+                        <div className="pt">{pData ? `${getMesStr(pData.last.mes)} ${pData.last.anio}` : 'Sin registros'}</div>
                       </div>
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { useAppContext } from '../../contexts/AppContext';
 export default function Topbar() {
   const { user, logout, updateProfile, showToast } = useAppContext();
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   
   // Local form state
@@ -105,12 +106,21 @@ export default function Topbar() {
 
               <div className="dv" style={{ margin: '28px 0 16px' }}></div>
               
-              <button className="btn bd2 bw" style={{ padding: '10px' }} onClick={() => {
-                if (window.confirm('¿Seguro querés cerrar tu sesión en Rentify?')) {
-                  logout();
-                  setShowUserModal(false);
-                }
-              }}>Cerrar sesión</button>
+              {showLogoutConfirm ? (
+                <div className="cd cd-d" style={{ padding: '16px', background: 'rgba(255, 60, 60, 0.1)', border: '1px solid rgba(255, 60, 60, 0.3)' }}>
+                  <div style={{ color: '#ffaaaa', fontWeight: 'bold', marginBottom: '10px', fontSize: '13px' }}>¿Seguro querés salir?</div>
+                  <div className="fr" style={{ gap: '10px' }}>
+                    <button className="btn bd2" onClick={() => setShowLogoutConfirm(false)} style={{ flex: 1 }}>Cancelar</button>
+                    <button className="btn bd" onClick={() => {
+                      logout();
+                      setShowUserModal(false);
+                      setShowLogoutConfirm(false);
+                    }} style={{ flex: 1 }}>Sí, salir</button>
+                  </div>
+                </div>
+              ) : (
+                <button className="btn bd2 bw" style={{ padding: '10px' }} onClick={() => setShowLogoutConfirm(true)}>Cerrar sesión</button>
+              )}
             </div>
           </div>
         </div>

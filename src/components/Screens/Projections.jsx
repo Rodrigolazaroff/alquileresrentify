@@ -319,16 +319,16 @@ export default function Projections() {
             {lastTwo && (
               <div className="sg" style={{ marginBottom: '20px' }}>
                 <div className="cd" style={{ textAlign: 'center', background: 'rgba(24,24,31,.8)', border: '1px solid var(--bd)' }}>
-                  <div className="lbl" style={{ color: 'var(--t2)', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>Hasta</div>
+                  <div className="lbl" style={{ color: 'var(--t2)', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>PERIODO ANTERIOR</div>
                   <div style={{ color: 'var(--t3)', fontSize: '13px', marginBottom: '5px', textTransform: 'capitalize' }}>
-                    {new Date(lastTwo.prev.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
+                    Desde {new Date(lastTwo.prev.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
                   </div>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: '26px', fontWeight: '800' }}>{formatCurrency(lastTwo.prev.newRent)}</div>
                 </div>
                 <div className="cd" style={{ textAlign: 'center', background: 'rgba(106, 181, 255, 0.05)', border: '1px solid rgba(106, 181, 255, 0.3)' }}>
-                  <div className="lbl" style={{ color: '#6ab5ff', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>Desde</div>
+                  <div className="lbl" style={{ color: '#6ab5ff', fontSize: '11px', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>NUEVO PERIODO</div>
                   <div style={{ color: '#6ab5ff', opacity: .7, fontSize: '13px', marginBottom: '5px', textTransform: 'capitalize' }}>
-                    {new Date(lastTwo.curr.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
+                    Desde {new Date(lastTwo.curr.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long' })}
                   </div>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: '26px', fontWeight: '800', color: '#fff' }}>{formatCurrency(lastTwo.curr.newRent)}</div>
                 </div>
